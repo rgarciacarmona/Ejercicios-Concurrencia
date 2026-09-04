@@ -8,7 +8,7 @@ public class Main {
             // Generar atributos aleatorios
             // Peso entre 1000 y 4000 kg
             int peso = 1000 + (int)(Math.random() * 3000);
-            // 10% de probabilidad de ser ambulancia
+            // 15% de probabilidad de ser ambulancia
             boolean esAmbulancia = Math.random() < 0.15; 
             
             new Vehiculo(puente, peso, esAmbulancia).start();

@@ -39,21 +39,25 @@ public class Marmita {
         notifyAll();
     }
 
-    public synchronized void rellenar() throws InterruptedException {
-        // El cocinero espera mientras haya comida o no le hayan avisado
-        while (raciones > 0 || !cocineroAvisado) {
-            wait();
+    public void rellenar() throws InterruptedException {
+        synchronized (this) {
+            // El cocinero espera mientras haya comida o no le hayan avisado
+            while (raciones > 0 || !cocineroAvisado) {
+                wait();
+            }
+            System.out.println(">>> COCINERO cocinando estofado...");
         }
 
-        System.out.println(">>> COCINERO cocinando estofado...");
-        // Simulación tiempo de cocina (fuera del bloqueo si quisiéramos concurrencia real, 
-        // pero dentro para simplificar consistencia en este modelo simple)
-        Thread.sleep(1000); 
-        
-        raciones = CAPACIDAD_MAX;
-        cocineroAvisado = false;
-        System.out.println(">>> COCINERO ha rellenado la marmita (" + CAPACIDAD_MAX + " raciones).");
-        
-        notifyAll(); // Avisamos a los caníbales hambrientos
+        // Simulación tiempo de cocina, fuera del monitor para no bloquear
+        // a los caníbales mientras se cocina
+        Thread.sleep(1000);
+
+        synchronized (this) {
+            raciones = CAPACIDAD_MAX;
+            cocineroAvisado = false;
+            System.out.println(">>> COCINERO ha rellenado la marmita (" + CAPACIDAD_MAX + " raciones).");
+
+            notifyAll(); // Avisamos a los caníbales hambrientos
+        }
     }
 }

@@ -89,37 +89,42 @@ public class Delegacion {
 	/**
 	 * Método del Funcionario (Andrés)
 	 */
-	public synchronized void atenderCiudadano() throws InterruptedException {
-		// 1. Si no hay nadie, dormir
-		while (esperaV1.isEmpty() && esperaV2.isEmpty()) {
-			System.out.println("ZZZ Andrés se echa una siesta...");
-			wait();
+	public void atenderCiudadano() throws InterruptedException {
+		synchronized (this) {
+			// 1. Si no hay nadie, dormir
+			while (esperaV1.isEmpty() && esperaV2.isEmpty()) {
+				System.out.println("ZZZ Andrés se echa una siesta...");
+				wait();
+			}
+
+			// 2. Decidir a quién atender (Regla: Cola más larga, empate gana V1)
+			if (esperaV1.size() >= esperaV2.size()) {
+				// Elige V1
+				atendiendoA = 1;
+				System.out.println("--- Andrés llama a Ventanilla 1 (Colas: V1=" + esperaV1.size() + ", V2=" + esperaV2.size() + ")");
+			} else {
+				// Elige V2
+				atendiendoA = 2;
+				System.out.println("--- Andrés llama a Ventanilla 2 (Colas: V1=" + esperaV1.size() + ", V2=" + esperaV2.size() + ")");
+			}
+
+			// Despertar a los ciudadanos para que uno de la ventanilla elegida entre
+			notifyAll();
 		}
 
-		// 2. Decidir a quién atender (Regla: Cola más larga, empate gana V1)
-		if (esperaV1.size() >= esperaV2.size()) {
-			// Elige V1
-			atendiendoA = 1;
-			System.out.println("--- Andrés llama a Ventanilla 1 (Colas: V1=" + esperaV1.size() + ", V2=" + esperaV2.size() + ")");
-		} else {
-			// Elige V2
-			atendiendoA = 2;
-			System.out.println("--- Andrés llama a Ventanilla 2 (Colas: V1=" + esperaV1.size() + ", V2=" + esperaV2.size() + ")");
-		}
+		// 3. Simular trabajo, fuera del monitor para no bloquear a los
+		// ciudadanos mientras dura el papeleo
+		Thread.sleep((long) (Math.random() * 500));
 
-		// Despertar a los ciudadanos para que uno de la ventanilla elegida entre
-		notifyAll();
+		synchronized (this) {
+			// 4. Terminar servicio
+			servicioTerminado = true;
+			notifyAll(); // Despierta al ciudadano para que se vaya
 
-		// 3. Simular trabajo (esperar a que el ciudadano entre y luego "terminar")
-		Thread.sleep((long) (Math.random() * 500)); // Tiempo de papeleo
-
-		// 4. Terminar servicio
-		servicioTerminado = true;
-		notifyAll(); // Despierta al ciudadano para que se vaya
-
-		// 5. Esperar a que el ciudadano se vaya realmente antes de llamar al siguiente
-		while (atendiendoA != 0) {
-			wait();
+			// 5. Esperar a que el ciudadano se vaya realmente antes de llamar al siguiente
+			while (atendiendoA != 0) {
+				wait();
+			}
 		}
 	}
 }

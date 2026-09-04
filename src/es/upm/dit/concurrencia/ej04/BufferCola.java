@@ -53,7 +53,7 @@ public class BufferCola {
     /**
      * Método para que las hebras consumidoras extraigan un dato
      */
-    public synchronized Integer consumir() {
+    public synchronized int consumir() throws InterruptedException {
         Thread yo = Thread.currentThread();
         esperaConsumidores.add(yo); // Se añade a la cola de consumidores
 
@@ -72,14 +72,14 @@ public class BufferCola {
             cantidad--;
 
             System.out.println("<<< Consumidor extrae: " + dato + " (Datos en buffer: " + cantidad + ")");
-            
+
             notifyAll();
             return dato;
 
         } catch (InterruptedException e) {
             esperaConsumidores.remove(yo);
             notifyAll();
-            return null;
+            throw e;
         }
     }
 }
